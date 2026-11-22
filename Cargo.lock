@@ -3,12 +3,12 @@
 version = 4
 
 [[package]]
-name = "app_test_noth"
+name = "cmf-wp2-app"
+version = "0.1.0"
+
+[[package]]
+name = "test_app"
 version = "0.1.0"
 dependencies = [
  "cmf-wp2-app",
 ]
-
-[[package]]
-name = "cmf-wp2-app"
-version = "0.1.0"

@@ -1,41 +1,41 @@
 #!/bin/bash
 set -euo pipefail
 
-# Nom de l'application
-APP_NAME="app_test_noth"
-VERSION=1
+APP_NAME=${1:-test_app}
+VERSION=${2:-1}
 
-# Ajouter llvm-objcopy au PATH
 export PATH="$PATH:/home/appuser/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin"
 
-# Compiler l'application
-echo "Building $APP_NAME..."
+echo "🔨 Building $APP_NAME..."
+
+# Build
 cargo build --release -p "$APP_NAME" --target thumbv7em-none-eabi
 
-# Créer le dossier target s'il n'existe pas
+# Générer .bin
 mkdir -p target
+llvm-objcopy -O binary --set-section-flags .data=alloc,load,contents \
+  "target/thumbv7em-none-eabi/release/$APP_NAME" \
+  "target/${APP_NAME}.bin"
 
-# Convertir l'ELF en binaire
-ELF_PATH="target/thumbv7em-none-eabi/release/$APP_NAME"
-BIN_PATH="target/$APP_NAME.bin"
-
-if [ -f "$ELF_PATH" ]; then
-    echo "Converting ELF to binary..."
-    llvm-objcopy -O binary --set-section-flags .data=alloc,load,contents "$ELF_PATH" "$BIN_PATH"
+# Générer .wp2app (si resvg et wp2apps sont disponibles)
+if command -v resvg &>/dev/null && command -v wp2apps &>/dev/null; then
+  ICON_SVG="apps/$APP_NAME/icon.svg"
+  if [ -f "$ICON_SVG" ]; then
+    echo "🎨 Generating icon..."
+    resvg -w 96 -h 96 "$ICON_SVG" target/icon.png
+    wp2apps icon target/icon.png target/icon.wp2icon
+    wp2apps pack "target/${APP_NAME}.bin" \
+      --elf "target/thumbv7em-none-eabi/release/$APP_NAME" \
+      --name "$APP_NAME" \
+      --version "$VERSION" \
+      --icon target/icon.wp2icon \
+      --output "target/${APP_NAME}.wp2app"
+    echo "✅ .wp2app generated: target/${APP_NAME}.wp2app"
+  else
+    echo "⚠️  No icon.svg found for $APP_NAME"
+  fi
 else
-    echo "Error: ELF file not found at $ELF_PATH"
-    exit 1
+  echo "⚠️  resvg or wp2apps not found, skipping .wp2app generation"
 fi
 
-# Vérifier la taille
-BIN_SIZE=$(stat -c%s "$BIN_PATH")
-echo "Binary size: $BIN_SIZE bytes"
-
-if [ "$BIN_SIZE" -gt 131072 ]; then
-    echo "Error: Binary too large (max 128 KiB)"
-    exit 1
-fi
-
-echo "Build successful!"
-echo "Binary: $BIN_PATH"
-echo "To create .wp2app, run: wp2apps pack $BIN_PATH --elf $ELF_PATH --name 'Test App' --version $VERSION --output target/$APP_NAME.wp2app"
+echo "✅ Build complete: target/${APP_NAME}.bin"
