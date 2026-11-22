@@ -1,0 +1,3 @@
+[submodule "cmf-watch-sdk"]
+	path = cmf-watch-sdk
+	url = https://github.com/InukaAsith/cmf-watch-sdk.git

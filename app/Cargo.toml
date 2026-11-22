@@ -1,0 +1,13 @@
+[package]
+name = "app_test_noth"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+cmf-wp2-app = { path = "../cmf-watch-sdk/sdk/cmf-wp2-app" }
+
+[[bin]]
+name = "app_test_noth"
+test = false
+bench = false
