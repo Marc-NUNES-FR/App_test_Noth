@@ -10,12 +10,15 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Rust
+      - name: Install Rust + llvm-tools
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           target: thumbv7em-none-eabi
           components: llvm-tools-preview
+
+      - name: Install llvm-objcopy (Ubuntu)
+        run: sudo apt-get update && sudo apt-get install -y llvm
 
       - name: Build
         run: |
