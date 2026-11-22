@@ -19,8 +19,7 @@ jobs:
 
       - name: Build
         run: |
-          cd cmf-watch-sdk/sdk
-          cargo build --release -p app_test_noth --manifest-path ../../app/Cargo.toml --target thumbv7em-none-eabi
+          cargo build --release -p app_test_noth --target thumbv7em-none-eabi
 
       - name: Generate .bin
         run: |
@@ -30,7 +29,7 @@ jobs:
             output/app_test_noth.bin
 
       - name: Upload .bin
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app_test_noth.bin
           path: output/app_test_noth.bin
